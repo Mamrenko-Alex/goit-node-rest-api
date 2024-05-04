@@ -5,6 +5,10 @@ import chalk from "chalk";
 
 const contactsPath = path.resolve("db", "contacts.json");
 
+const writeFile = (newContacts) => {
+  return fs.writeFile(contactsPath, JSON.stringify(newContacts, null, 2));
+};
+
 async function listContacts() {
   try {
     const data = await fs.readFile(contactsPath, "utf-8");
@@ -30,8 +34,8 @@ async function removeContact(contactId) {
     if (!removedContact) {
       return null;
     }
-    const newContasts = contasts.filter(({ id }) => id !== contactId);
-    await fs.writeFile(contactsPath, JSON.stringify(newContasts, null, 2));
+    const newContacts = contasts.filter(({ id }) => id !== contactId);
+    await writeFile(newContacts);
     console.log(chalk.green("Contact removed successfully!"));
     return removedContact;
   } catch (error) {
@@ -50,7 +54,7 @@ async function addContact(name, email, phone) {
     const contasts = await listContacts();
     const newContact = { id: nanoid(), name, email, phone };
     contasts.push(newContact);
-    await fs.writeFile(contactsPath, JSON.stringify(contasts, null, 2));
+    await writeFile(contasts);
     return newContact;
   } catch (error) {
     console.log(chalk.red("error =>"), error);
@@ -70,7 +74,7 @@ async function updateContact(id, data) {
     return null;
   }
   contasts[index] = { ...contasts[index], ...data };
-  await fs.writeFile(contactsPath, JSON.stringify(contasts, null, 2));
+  await writeFile(contasts);
   return contasts[index];
 }
 

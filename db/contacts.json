@@ -64,11 +64,5 @@
     "name": "Alex Test",
     "email": "Alex@testing.net",
     "phone": "123456789"
-  },
-  {
-    "id": "SWLuSZyc0Ty2pB0sGm2U2",
-    "name": "Alex test update",
-    "email": "Test@mail.com",
-    "phone": "123456789"
   }
 ]
