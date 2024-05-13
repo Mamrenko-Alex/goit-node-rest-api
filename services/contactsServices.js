@@ -36,7 +36,6 @@ async function removeContact(contactId) {
     }
     const newContacts = contasts.filter(({ id }) => id !== contactId);
     await writeFile(newContacts);
-    console.log(chalk.green("Contact removed successfully!"));
     return removedContact;
   } catch (error) {
     console.log(chalk.red("error =>"), error);
@@ -44,12 +43,6 @@ async function removeContact(contactId) {
 }
 
 async function addContact(name, email, phone) {
-  if (!name || !email || !phone) {
-    return console.log(
-      chalk.red("error =>"),
-      "fields name, email, phone are reqared"
-    );
-  }
   try {
     const contasts = await listContacts();
     const newContact = { id: nanoid(), name, email, phone };
