@@ -5,6 +5,7 @@ import validateBody from "../helpers/validateBody.js";
 import {
   createContactSchema,
   updateContactSchema,
+  addContactToFavoriteSchema,
 } from "../schemas/contactsSchemas.js";
 
 const contactsRouter = express.Router();
@@ -19,8 +20,7 @@ contactsRouter.delete("/:id", contactsControllers.deleteContact);
 
 contactsRouter.patch(
   "/:id/favorite",
-  isEmptyBody,
-  validateBody(updateContactSchema),
+  validateBody(addContactToFavoriteSchema),
   contactsControllers.updateStatusContact
 );
 
