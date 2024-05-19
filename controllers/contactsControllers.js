@@ -3,14 +3,16 @@ import { tryCatchWrapper } from "../helpers/tryCathWrapper.js";
 import { handleResult } from "../helpers/handleResult.js";
 
 const getAllContacts = async (req, res, next) => {
+  const { _id: owner } = req.user;
   const { favorite, page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
-  let filter = {};
 
+  let filter = { owner };
   if (favorite) {
-    filter = { favorite };
+    filter.favorite = favorite;
   }
 
+  console.log(filter);
   const fields = "-createdAt -updatedAt";
   const settings = { skip, limit };
 
@@ -37,8 +39,14 @@ const deleteContact = async (req, res, next) => {
 };
 
 const createContact = async (req, res, next) => {
+  const { _id: owner } = req.user;
   const { name, email, phone } = req.body;
-  const result = await contactsService.addContact({ name, email, phone });
+  const result = await contactsService.addContact({
+    name,
+    email,
+    phone,
+    owner,
+  });
   res.status(201).json(result);
 };
 

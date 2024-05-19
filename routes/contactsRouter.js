@@ -8,10 +8,11 @@ import {
   addContactToFavoriteSchema,
 } from "../schemas/contactsSchemas.js";
 import { isValidId } from "../middlewares/isValidId.js";
+import { isValidToken } from "../middlewares/isValidToken.js";
 
 const contactsRouter = express.Router();
 
-contactsRouter.get("/", contactsControllers.getAllContacts);
+contactsRouter.get("/", isValidToken, contactsControllers.getAllContacts);
 
 contactsRouter.get("/:id", isValidId, contactsControllers.getOneContact);
 
@@ -26,6 +27,7 @@ contactsRouter.patch(
 
 contactsRouter.post(
   "/",
+  isValidToken,
   isEmptyBody,
   validateBody(createContactSchema),
   contactsControllers.createContact
