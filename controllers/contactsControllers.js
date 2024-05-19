@@ -1,12 +1,7 @@
 import HttpError from "../helpers/HttpError.js";
 import contactsService from "../services/contactsServices.js";
 import { tryCatchWrapper } from "../helpers/tryCathWrapper.js";
-
-const handleResult = (result) => {
-  if (!result || result.length === 0) {
-    throw HttpError(404, "Not found");
-  }
-};
+import { handleResult } from "../helpers/handleResult.js";
 
 const getAllContacts = async (req, res, next) => {
   const result = await contactsService.listContacts();

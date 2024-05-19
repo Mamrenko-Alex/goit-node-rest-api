@@ -1,6 +1,24 @@
 import HttpError from "../helpers/HttpError.js";
 import { tryCatchWrapper } from "../helpers/tryCathWrapper.js";
 import usersServices from "../services/usersServices.js";
+import { handleResult } from "../helpers/handleResult.js";
+import { compareHash } from "../helpers/compareHash.js";
+import { createToken } from "../helpers/jwt.js";
+
+const getAllusers = async (req, res, next) => {
+  const result = await usersServices.findUser();
+  res.json(result);
+};
+
+const getOneUser = async (req, res, next) => {
+  const { _id } = req.user;
+  const user = await usersServices.findUser({ _id });
+  handleResult(user);
+  res.json({
+    email: user.email,
+    subscription: user.subscription,
+  });
+};
 
 const registerUser = async (req, res, next) => {
   const { email } = req.body;
@@ -17,6 +35,49 @@ const registerUser = async (req, res, next) => {
   });
 };
 
+const updateUser = async (req, res, next) => {
+  const { id } = req.params;
+  const result = await usersServices.updateUser(id, req.body);
+  handleResult(result);
+  res.json({
+    email: result.email,
+    subscription: result.subscription,
+  });
+};
+
+const loginUser = async (req, res, next) => {
+  const { email, password } = req.body;
+  const user = await usersServices.findUser({ email });
+
+  if (!user) {
+    throw HttpError(401, "Email or password is wrong");
+  }
+
+  const comparePassword = await compareHash(password, user.password);
+  if (!comparePassword) {
+    throw HttpError(401, "Email or password is wrong");
+  }
+
+  const { _id: id } = user;
+  const payload = { id };
+  const token = createToken(payload);
+  await usersServices.updateUser(id, { token });
+
+  res.json({ token });
+};
+
+const logoutUser = async (req, res, next) => {
+  const { _id } = req.user;
+  const result = await usersServices.updateUser(_id, { token: "" });
+  handleResult(result);
+  res.status(204).json({});
+};
+
 export default {
   registerUser: tryCatchWrapper(registerUser),
+  getAllusers: tryCatchWrapper(getAllusers),
+  updateUser: tryCatchWrapper(updateUser),
+  getOneUser: tryCatchWrapper(getOneUser),
+  loginUser: tryCatchWrapper(loginUser),
+  logoutUser: tryCatchWrapper(logoutUser),
 };

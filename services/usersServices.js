@@ -1,14 +1,27 @@
 import User from "../models/Users.js";
+import bcrypt from "bcrypt";
 
-function createUser(data) {
-  return User.create(data);
+async function createUser(data) {
+  const hashPassword = await bcrypt.hash(data.password, 10);
+  return User.create({ ...data, password: hashPassword });
 }
 
 function findUser(filter) {
-  return User.findOne(filter);
+  if (filter) {
+    return User.findOne(filter);
+  }
+  return User.find({});
 }
+
+function updateUser(userId, data) {
+  return User.findByIdAndUpdate(userId, data);
+}
+
+function loginUser() {}
 
 export default {
   createUser,
   findUser,
+  updateUser,
+  loginUser,
 };
