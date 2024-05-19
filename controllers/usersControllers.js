@@ -73,6 +73,22 @@ const logoutUser = async (req, res, next) => {
   res.status(204).json({});
 };
 
+const changeSubscription = async (req, res, next) => {
+  const { subscription: newSubscription } = req.body;
+  const { _id, subscription } = req.user;
+
+  if (newSubscription === subscription) {
+    throw HttpError(409, `You already have ${subscription} level`);
+  }
+
+  const result = await usersServices.updateUser(_id, { newSubscription });
+  handleResult(result);
+  res.json({
+    email: result.email,
+    subscription: result.subscription,
+  });
+};
+
 export default {
   registerUser: tryCatchWrapper(registerUser),
   getAllusers: tryCatchWrapper(getAllusers),
@@ -80,4 +96,5 @@ export default {
   getOneUser: tryCatchWrapper(getOneUser),
   loginUser: tryCatchWrapper(loginUser),
   logoutUser: tryCatchWrapper(logoutUser),
+  changeSubscription: tryCatchWrapper(changeSubscription),
 };

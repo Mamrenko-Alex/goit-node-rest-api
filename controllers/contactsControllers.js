@@ -1,10 +1,24 @@
-import HttpError from "../helpers/HttpError.js";
 import contactsService from "../services/contactsServices.js";
 import { tryCatchWrapper } from "../helpers/tryCathWrapper.js";
 import { handleResult } from "../helpers/handleResult.js";
 
 const getAllContacts = async (req, res, next) => {
-  const result = await contactsService.listContacts();
+  const { favorite, page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+  let filter = {};
+
+  if (favorite) {
+    filter = { favorite };
+  }
+
+  const fields = "-createdAt -updatedAt";
+  const settings = { skip, limit };
+
+  const result = await contactsService.listContacts({
+    filter,
+    fields,
+    settings,
+  });
   res.json(result);
 };
 
@@ -43,12 +57,6 @@ const updateStatusContact = async (req, res, next) => {
   res.json(result);
 };
 
-const getFavoriteContacts = async (req, res, next) => {
-  const filter = { favorite: true };
-  const result = await contactsService.listContacts({ filter });
-  res.json(result);
-};
-
 export default {
   getAllContacts: tryCatchWrapper(getAllContacts),
   getOneContact: tryCatchWrapper(getOneContact),
@@ -56,5 +64,4 @@ export default {
   createContact: tryCatchWrapper(createContact),
   updateContact: tryCatchWrapper(updateContact),
   updateStatusContact: tryCatchWrapper(updateStatusContact),
-  getFavoriteContacts: tryCatchWrapper(getFavoriteContacts),
 };

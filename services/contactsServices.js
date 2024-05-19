@@ -1,8 +1,8 @@
 import Contact from "../models/Contacts.js";
 
 function listContacts(search = {}) {
-  const { filter = {} } = search;
-  return Contact.find(filter);
+  const { filter = {}, fields = "", settings = {} } = search;
+  return Contact.find(filter, fields, settings);
 }
 
 function getContactById(contactId) {

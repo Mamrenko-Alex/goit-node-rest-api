@@ -5,13 +5,21 @@ import validateBody from "../helpers/validateBody.js";
 import {
   createUserSchema,
   loginUserSchema,
-  updateUserSchema,
+  changeSubscriptionSchema,
 } from "../schemas/usersSchemas.js";
 import { isValidToken } from "../middlewares/isValidToken.js";
 
 const usersRouter = express.Router();
 
 usersRouter.get("/", usersControllers.getAllusers);
+
+usersRouter.patch(
+  "/",
+  isValidToken,
+  isEmptyBody,
+  validateBody(changeSubscriptionSchema),
+  usersControllers.changeSubscription
+);
 
 usersRouter.post(
   "/register",
@@ -28,15 +36,7 @@ usersRouter.post(
 );
 
 usersRouter.post("/logout", isValidToken, usersControllers.logoutUser);
+
 usersRouter.get("/current", isValidToken, usersControllers.getOneUser);
-
-// usersRouter.get("/:id", usersControllers.getOneUser);
-
-// usersRouter.post(
-//   "/:id",
-//   isEmptyBody,
-//   validateBody(updateUserSchema),
-//   usersControllers.updateUser
-// );
 
 export default usersRouter;
