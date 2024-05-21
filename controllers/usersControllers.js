@@ -6,23 +6,26 @@ import { compareHash } from "../helpers/compareHash.js";
 import { createToken } from "../helpers/jwt.js";
 
 const getAllusers = async (req, res, next) => {
-  const result = await usersServices.findUser();
+  const fields = "-createdAt -updatedAt -password -token";
+  const result = await usersServices.findUser({ filter: {}, fields });
   res.json(result);
 };
 
 const getOneUser = async (req, res, next) => {
   const { _id } = req.user;
-  const user = await usersServices.findUser({ _id });
+  const [user] = await usersServices.findUser({ _id });
   handleResult(user);
   res.json({
-    email: user.email,
-    subscription: user.subscription,
+    user: {
+      email: user.email,
+      subscription: user.subscription,
+    },
   });
 };
 
 const registerUser = async (req, res, next) => {
   const { email } = req.body;
-  const user = await usersServices.findUser({ email });
+  const [user] = await usersServices.findUser({ email });
   if (user) {
     throw HttpError(409, "Email already use");
   }
@@ -30,8 +33,10 @@ const registerUser = async (req, res, next) => {
   const newUser = await usersServices.createUser(req.body);
 
   res.status(201).json({
-    email: newUser.email,
-    subscription: newUser.subscription,
+    user: {
+      email: newUser.email,
+      subscription: newUser.subscription,
+    },
   });
 };
 
@@ -40,14 +45,16 @@ const updateUser = async (req, res, next) => {
   const result = await usersServices.updateUser(id, req.body);
   handleResult(result);
   res.json({
-    email: result.email,
-    subscription: result.subscription,
+    user: {
+      email: result.email,
+      subscription: result.subscription,
+    },
   });
 };
 
 const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
-  const user = await usersServices.findUser({ email });
+  const [user] = await usersServices.findUser({ filter: { email } });
 
   if (!user) {
     throw HttpError(401, "Email or password is wrong");
@@ -63,7 +70,13 @@ const loginUser = async (req, res, next) => {
   const token = createToken(payload);
   await usersServices.updateUser(id, { token });
 
-  res.json({ token });
+  res.json({
+    token,
+    user: {
+      email: user.email,
+      subscription: user.subscription,
+    },
+  });
 };
 
 const logoutUser = async (req, res, next) => {
@@ -81,11 +94,16 @@ const changeSubscription = async (req, res, next) => {
     throw HttpError(409, `You already have ${subscription} level`);
   }
 
-  const result = await usersServices.updateUser(_id, { newSubscription });
+  const result = await usersServices.updateUser(_id, {
+    subscription: newSubscription,
+  });
+
   handleResult(result);
   res.json({
-    email: result.email,
-    subscription: result.subscription,
+    user: {
+      email: result.email,
+      subscription: result.subscription,
+    },
   });
 };
 

@@ -16,7 +16,7 @@ export const isValidToken = async (req, res, next) => {
 
   try {
     const { id } = validateToken(token);
-    const user = await usersServices.findUser({ _id: id });
+    const [user] = await usersServices.findUser({ filter: { _id: id } });
 
     if (!user) {
       return next(HttpError(401, "User not found"));

@@ -6,11 +6,9 @@ async function createUser(data) {
   return User.create({ ...data, password: hashPassword });
 }
 
-function findUser(filter) {
-  if (filter) {
-    return User.findOne(filter);
-  }
-  return User.find({});
+function findUser(search = {}) {
+  const { filter, fields } = search;
+  return User.find(filter, fields);
 }
 
 function updateUser(userId, data) {

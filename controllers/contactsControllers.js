@@ -12,7 +12,6 @@ const getAllContacts = async (req, res, next) => {
     filter.favorite = favorite;
   }
 
-  console.log(filter);
   const fields = "-createdAt -updatedAt";
   const settings = { skip, limit };
 
@@ -25,15 +24,17 @@ const getAllContacts = async (req, res, next) => {
 };
 
 const getOneContact = async (req, res, next) => {
+  const { _id: owner } = req.user;
   const { id } = req.params;
-  const result = await contactsService.getContactById(id);
+  const result = await contactsService.getContactById(id, owner);
   handleResult(result);
   res.json(result);
 };
 
 const deleteContact = async (req, res, next) => {
+  const { _id: owner } = req.user;
   const { id } = req.params;
-  const result = await contactsService.removeContact(id);
+  const result = await contactsService.removeContact(id, owner);
   handleResult(result);
   res.json(result);
 };
@@ -51,16 +52,9 @@ const createContact = async (req, res, next) => {
 };
 
 const updateContact = async (req, res, next) => {
+  const { _id: owner } = req.user;
   const { id } = req.params;
-  const result = await contactsService.updateContact(id, req.body);
-  handleResult(result);
-  res.json(result);
-};
-
-const updateStatusContact = async (req, res, next) => {
-  const { id } = req.params;
-  const { favorite } = req.body;
-  const result = await contactsService.updateStatusContact(id, { favorite });
+  const result = await contactsService.updateContact(id, owner, req.body);
   handleResult(result);
   res.json(result);
 };
@@ -71,5 +65,4 @@ export default {
   deleteContact: tryCatchWrapper(deleteContact),
   createContact: tryCatchWrapper(createContact),
   updateContact: tryCatchWrapper(updateContact),
-  updateStatusContact: tryCatchWrapper(updateStatusContact),
 };
