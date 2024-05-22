@@ -7,13 +7,17 @@ import { createToken } from "../helpers/jwt.js";
 
 const getAllusers = async (req, res, next) => {
   const fields = "-createdAt -updatedAt -password -token";
-  const result = await usersServices.findUser({ filter: {}, fields });
+  const { favorite, page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+  const settings = { skip, limit };
+
+  const result = await usersServices.findUser({ filter: {}, fields, settings });
   res.json(result);
 };
 
 const getOneUser = async (req, res, next) => {
   const { _id } = req.user;
-  const [user] = await usersServices.findUser({ _id });
+  const [user] = await usersServices.findUser({ filter: { _id } });
   handleResult(user);
   res.json({
     user: {
@@ -25,7 +29,7 @@ const getOneUser = async (req, res, next) => {
 
 const registerUser = async (req, res, next) => {
   const { email } = req.body;
-  const [user] = await usersServices.findUser({ email });
+  const [user] = await usersServices.findUser({ filter: { email } });
   if (user) {
     throw HttpError(409, "Email already use");
   }

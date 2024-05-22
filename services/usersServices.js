@@ -7,8 +7,8 @@ async function createUser(data) {
 }
 
 function findUser(search = {}) {
-  const { filter, fields } = search;
-  return User.find(filter, fields);
+  const { filter, fields, settings } = search;
+  return User.find(filter, fields, settings);
 }
 
 function updateUser(userId, data) {
