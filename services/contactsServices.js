@@ -6,7 +6,7 @@ function listContacts(search = {}) {
 }
 
 function getContactById(contactId, owner) {
-  return Contact.find({ _id: contactId, owner });
+  return Contact.findOne({ _id: contactId, owner });
 }
 
 function removeContact(contactId, owner) {
