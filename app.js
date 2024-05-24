@@ -3,6 +3,7 @@ import morgan from "morgan";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import path from "path";
 
 import contactsRouter from "./routes/contactsRouter.js";
 import usersRouter from "./routes/usersRouter.js";
@@ -19,6 +20,7 @@ app.use(express.json());
 
 app.use("/api/users", usersRouter);
 app.use("/api/contacts", contactsRouter);
+app.use("/avatars", express.static(path.join("public", "avatars")));
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
