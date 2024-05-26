@@ -1,3 +1,6 @@
+import path from "path";
+import Jimp from "jimp";
+
 import HttpError from "../helpers/HttpError.js";
 import { tryCatchWrapper } from "../helpers/tryCathWrapper.js";
 import usersServices from "../services/usersServices.js";
@@ -5,9 +8,11 @@ import { handleResult } from "../helpers/handleResult.js";
 import { compareHash } from "../helpers/compareHash.js";
 import { createToken } from "../helpers/jwt.js";
 
+const galleryPath = path.resolve("public", "avatars");
+
 const getAllusers = async (req, res, next) => {
   const fields = "-createdAt -updatedAt -password -token";
-  const { favorite, page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
   const settings = { skip, limit };
 
@@ -35,11 +40,11 @@ const registerUser = async (req, res, next) => {
   }
 
   const newUser = await usersServices.createUser(req.body);
-
   res.status(201).json({
     user: {
       email: newUser.email,
       subscription: newUser.subscription,
+      avatarURL: newUser.avatarURL,
     },
   });
 };
@@ -111,6 +116,28 @@ const changeSubscription = async (req, res, next) => {
   });
 };
 
+const updateAvatar = async (req, res, next) => {
+  const { _id } = req.user;
+  const { path: oldPath, filename } = req.file;
+  const newPath = path.join(galleryPath, filename);
+
+  Jimp.read(oldPath, (err, avatar) => {
+    if (err) {
+      throw err;
+    }
+    return avatar
+      .resize(250, 250) // resize
+      .write(newPath); // save
+  });
+
+  const avatarURL = path.join("avatars", filename);
+  const result = await usersServices.updateUser(_id, { avatarURL });
+
+  res.json({
+    avatarURL: result.avatarURL,
+  });
+};
+
 export default {
   registerUser: tryCatchWrapper(registerUser),
   getAllusers: tryCatchWrapper(getAllusers),
@@ -119,4 +146,5 @@ export default {
   loginUser: tryCatchWrapper(loginUser),
   logoutUser: tryCatchWrapper(logoutUser),
   changeSubscription: tryCatchWrapper(changeSubscription),
+  updateAvatar: tryCatchWrapper(updateAvatar),
 };

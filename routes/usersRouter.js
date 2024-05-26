@@ -6,8 +6,10 @@ import {
   createUserSchema,
   loginUserSchema,
   changeSubscriptionSchema,
+  updateUserSchema,
 } from "../schemas/usersSchemas.js";
 import { isValidToken } from "../middlewares/isValidToken.js";
+import upload from "../middlewares/upload.js";
 
 const usersRouter = express.Router();
 
@@ -33,6 +35,13 @@ usersRouter.post(
   isEmptyBody,
   validateBody(loginUserSchema),
   usersControllers.loginUser
+);
+
+usersRouter.patch(
+  "/avatars",
+  isValidToken,
+  upload.single("avatar"),
+  usersControllers.updateAvatar
 );
 
 usersRouter.post("/logout", isValidToken, usersControllers.logoutUser);

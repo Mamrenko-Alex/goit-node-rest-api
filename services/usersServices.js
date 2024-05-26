@@ -1,9 +1,11 @@
-import User from "../models/Users.js";
 import bcrypt from "bcrypt";
+import gravatar from "gravatar";
+import User from "../models/Users.js";
 
 async function createUser(data) {
   const hashPassword = await bcrypt.hash(data.password, 10);
-  return User.create({ ...data, password: hashPassword });
+  const avatarURL = gravatar.url(data.email, { s: "200", r: "pg", d: "retro" });
+  return User.create({ ...data, password: hashPassword, avatarURL });
 }
 
 function findUser(search = {}) {
