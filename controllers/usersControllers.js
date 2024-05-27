@@ -1,5 +1,6 @@
 import path from "path";
 import Jimp from "jimp";
+import fs from "fs";
 
 import HttpError from "../helpers/HttpError.js";
 import { tryCatchWrapper } from "../helpers/tryCathWrapper.js";
@@ -117,17 +118,25 @@ const changeSubscription = async (req, res, next) => {
 };
 
 const updateAvatar = async (req, res, next) => {
+  if (!req.file) {
+    throw HttpError(400, "You must add an image");
+  }
+
   const { _id } = req.user;
   const { path: oldPath, filename } = req.file;
   const newPath = path.join(galleryPath, filename);
 
   Jimp.read(oldPath, (err, avatar) => {
     if (err) {
-      throw err;
+      throw HttpError(500, err);
     }
-    return avatar
-      .resize(250, 250) // resize
-      .write(newPath); // save
+    return avatar.resize(250, 250).write(newPath, () => {
+      fs.unlink(oldPath, (err) => {
+        if (err) {
+          throw HttpError(500, err);
+        }
+      });
+    });
   });
 
   const avatarURL = path.join("avatars", filename);
