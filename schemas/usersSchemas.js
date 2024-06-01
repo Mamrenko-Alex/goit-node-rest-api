@@ -33,3 +33,10 @@ export const changeSubscriptionSchema = Joi.object({
       )}`,
     }),
 });
+
+export const verifyTokenUserSchema = Joi.object({
+  email: Joi.string().pattern(emailRegexp).required().messages({
+    "string.pattern.base": "you entered an invalid email",
+    "any.required": "missing required field email",
+  }),
+});

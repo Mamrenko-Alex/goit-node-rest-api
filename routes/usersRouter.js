@@ -7,9 +7,11 @@ import {
   loginUserSchema,
   changeSubscriptionSchema,
   updateUserSchema,
+  verifyTokenUserSchema,
 } from "../schemas/usersSchemas.js";
 import { isValidToken } from "../middlewares/isValidToken.js";
 import upload from "../middlewares/upload.js";
+import { isVerificationToken } from "../middlewares/isVerificationToken.js";
 
 const usersRouter = express.Router();
 
@@ -34,6 +36,7 @@ usersRouter.post(
   "/login",
   isEmptyBody,
   validateBody(loginUserSchema),
+  isVerificationToken,
   usersControllers.loginUser
 );
 
@@ -47,5 +50,14 @@ usersRouter.patch(
 usersRouter.post("/logout", isValidToken, usersControllers.logoutUser);
 
 usersRouter.get("/current", isValidToken, usersControllers.getOneUser);
+
+usersRouter.post(
+  "/verify",
+  isEmptyBody,
+  validateBody(verifyTokenUserSchema),
+  usersControllers.resendVerifyToken
+);
+
+usersRouter.get("/verify/:verificationToken", usersControllers.verifyToken);
 
 export default usersRouter;

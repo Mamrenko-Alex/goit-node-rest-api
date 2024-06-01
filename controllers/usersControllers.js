@@ -1,6 +1,8 @@
 import path from "path";
 import Jimp from "jimp";
 import fs from "fs";
+import { nanoid } from "nanoid";
+import dotenv from "dotenv";
 
 import HttpError from "../helpers/HttpError.js";
 import { tryCatchWrapper } from "../helpers/tryCathWrapper.js";
@@ -8,6 +10,11 @@ import usersServices from "../services/usersServices.js";
 import { handleResult } from "../helpers/handleResult.js";
 import { compareHash } from "../helpers/compareHash.js";
 import { createToken } from "../helpers/jwt.js";
+import sendEmail from "../helpers/sendEmail.js";
+
+dotenv.config();
+
+const { HOST_URL } = process.env;
 
 const galleryPath = path.resolve("public", "avatars");
 
@@ -40,7 +47,17 @@ const registerUser = async (req, res, next) => {
     throw HttpError(409, "Email already use");
   }
 
-  const newUser = await usersServices.createUser(req.body);
+  const newUser = await usersServices.createUser({
+    ...req.body,
+    verificationToken: nanoid(),
+  });
+
+  sendEmail({
+    to: newUser.email,
+    subject: "Your verification token",
+    text: `Your verification token is already done. Please follow the link ${HOST_URL}/api/users/verify/${newUser.verificationToken}`,
+  });
+
   res.status(201).json({
     user: {
       email: newUser.email,
@@ -147,6 +164,42 @@ const updateAvatar = async (req, res, next) => {
   });
 };
 
+const verifyToken = async (req, res, next) => {
+  const { verificationToken } = req.params;
+  const [user] = await usersServices.findUser({
+    filter: { verificationToken },
+  });
+  handleResult(user);
+  const newUser = await usersServices.updateUser(user._id, {
+    verificationToken: null,
+    verify: true,
+  });
+  res.json({
+    message: "Verification successful",
+  });
+};
+
+const resendVerifyToken = async (req, res, next) => {
+  const { email } = req.body;
+  const [user] = await usersServices.findUser({ filter: { email } });
+  handleResult(user);
+
+  if (user.verify) {
+    throw HttpError(
+      400,
+      "Verification has already been passed. You can just log in"
+    );
+  }
+
+  sendEmail({
+    to: user.email,
+    subject: "Your verification token",
+    text: `Your verification token is already done. Please follow the link ${HOST_URL}/api/users/verify/${user.verificationToken}`,
+  });
+
+  res.json({ message: "Verification email sent" });
+};
+
 export default {
   registerUser: tryCatchWrapper(registerUser),
   getAllusers: tryCatchWrapper(getAllusers),
@@ -156,4 +209,6 @@ export default {
   logoutUser: tryCatchWrapper(logoutUser),
   changeSubscription: tryCatchWrapper(changeSubscription),
   updateAvatar: tryCatchWrapper(updateAvatar),
+  verifyToken: tryCatchWrapper(verifyToken),
+  resendVerifyToken: tryCatchWrapper(resendVerifyToken),
 };
